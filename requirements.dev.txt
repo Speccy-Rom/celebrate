@@ -1,0 +1,8 @@
+coverage==5.5
+Faker==8.13.2
+locust
+pylama==7.7.1
+pytest~=6.2.5
+pytest-aiohttp~=0.3.0
+pytest-cov==2.12.1
+SQLAlchemy-Utils==0.37.8
