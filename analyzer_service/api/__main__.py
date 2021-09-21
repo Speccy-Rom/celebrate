@@ -10,6 +10,8 @@ import pwd
 from sys import argv
 
 from aiohttp.web import run_app
+from aiomisc import bind_socket
+from aiomisc.log import LogFormat, basic_config
 from configargparse import ArgumentParser
 from setproctitle import setproctitle
 from yarl import URL
@@ -18,7 +20,9 @@ from analyzer_service.api.app import create_app
 from analyzer_service.utils.argparse import clear_environ, positive_int
 from analyzer_service.utils.pg import DEFAULT_PG_URL
 
+
 ENV_VAR_PREFIX = 'ANALYZER_'
+
 
 parser = ArgumentParser(
     auto_env_var_prefix=ENV_VAR_PREFIX, allow_abbrev=False,
@@ -44,7 +48,8 @@ group.add_argument('--pg-pool-max-size', type=int, default=10,
 group = parser.add_argument_group('Logging options')
 group.add_argument('--log-level', default='info',
                    choices=('debug', 'info', 'warning', 'error', 'fatal'))
-
+group.add_argument('--log-format', choices=LogFormat.choices(),
+                   default='color')
 
 
 def main():
@@ -61,6 +66,16 @@ def main():
     # по префиксу приложения, указанного в ConfigArgParser.
     clear_environ(lambda i: i.startswith(ENV_VAR_PREFIX))
 
+    # Чтобы логи не блокировали основной поток (и event loop) во время операций
+    # записи в stderr или файл - логи можно буфферизовать и обрабатывать в
+    # отдельном потоке (aiomisc.basic_config настроит буфферизацию
+    # автоматически).
+    basic_config(args.log_level, args.log_format, buffered=True)
+
+    # Аллоцируем сокет из под привиллегированного пользователя отдельным шагом,
+    # чтобы была возможность перед запуском приложения сменить пользователя ОС.
+    sock = bind_socket(address=args.api_address, port=args.api_port,
+                       proto_name='http')
 
     # После того как приложение аллоцировало сокет и ему больше не нужны
     # привиллегии - хорошим решением будет сменить пользователя (например,
@@ -75,7 +90,7 @@ def main():
     setproctitle(os.path.basename(argv[0]))
 
     app = create_app(args)
-    run_app(app)
+    run_app(app, sock=sock)
 
 
 if __name__ == '__main__':
