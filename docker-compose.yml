@@ -1,0 +1,13 @@
+version: '3.8'
+
+
+services:
+  db:
+    container_name: analyzer_service
+    image: postgres:13-alpine
+    env_file:
+      - .env
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
