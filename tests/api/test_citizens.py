@@ -60,12 +60,14 @@ def import_dataset(connection, citizens) -> int:
             'apartment': citizen['apartment'],
         })
 
-        for relative_id in citizen['relatives']:
-            relations_rows.append({
+        relations_rows.extend(
+            {
                 'import_id': import_id,
                 'citizen_id': citizen['citizen_id'],
                 'relative_id': relative_id,
-            })
+            }
+            for relative_id in citizen['relatives']
+        )
 
     if citizen_rows:
         query = citizens_table.insert().values(citizen_rows)

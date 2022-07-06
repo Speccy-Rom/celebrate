@@ -57,9 +57,13 @@ class AnalyzerTaskSet(TaskSet):
 
     def update_citizen(self, import_id):
         url = url_for(CitizenView.URL_PATH, import_id=import_id, citizen_id=1)
-        self.request('PATCH', url, HTTPStatus.OK,
-                     name='/imports/{import_id}/citizens/{citizen_id}',
-                     json={'relatives': [i for i in range(3, 10)]})
+        self.request(
+            'PATCH',
+            url,
+            HTTPStatus.OK,
+            name='/imports/{import_id}/citizens/{citizen_id}',
+            json={'relatives': list(range(3, 10))},
+        )
 
     def get_birthdays(self, import_id):
         url = url_for(CitizenBirthdaysView.URL_PATH, import_id=import_id)

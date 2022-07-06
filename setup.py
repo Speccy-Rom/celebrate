@@ -17,10 +17,8 @@ def load_requirements(fname: str) -> list:
     requirements = []
     with open(fname, 'r') as fp:
         for req in parse_requirements(fp.read()):
-            extras = '[{}]'.format(','.join(req.extras)) if req.extras else ''
-            requirements.append(
-                '{}{}{}'.format(req.name, extras, req.specifier)
-            )
+            extras = f"[{','.join(req.extras)}]" if req.extras else ''
+            requirements.append(f'{req.name}{extras}{req.specifier}')
     return requirements
 
 

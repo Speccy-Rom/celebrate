@@ -77,8 +77,7 @@ class CitizenView(BaseImportView):
 
     @classmethod
     async def update_citizen(cls, conn, import_id, citizen_id, data):
-        values = {k: v for k, v in data.items() if k != 'relatives'}
-        if values:
+        if values := {k: v for k, v in data.items() if k != 'relatives'}:
             query = citizens_table.update().values(values).where(and_(
                 citizens_table.c.import_id == import_id,
                 citizens_table.c.citizen_id == citizen_id
